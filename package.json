@@ -1,5 +1,8 @@
 {
   "private": true,
+  "scripts": {
+    "test": "cd tests && gren make src/Main.gren && node app"
+  },
   "dependencies": {
     "gren-lang": "^0.3.0"
   }

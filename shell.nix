@@ -3,6 +3,7 @@ mkShell {
   buildInputs = [
     bashInteractive
     nodejs_18
+    entr
   ];
   shellHook = ''
     export PATH="$PWD/node_modules/.bin:$PATH"

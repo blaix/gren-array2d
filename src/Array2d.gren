@@ -1,4 +1,433 @@
 module Array2d exposing
-    (
+    ( Array2d
+
+    -- Initialize
+    , initialize
+    , repeat
+
+    -- Transform
+    , map
+    , indexedMap
+    , foldl
+    , foldr
+    , filter
+    , filterMap
+
+    -- Query
+    , get
+    , size
+    , findFirst
+    , findLast
+    , member
+    , any
+    , all
+    , minimum
+    , maximum
+    
+    -- Modify
+    , set
+    , update
     )
 
+{-| Functions for working with 2-dimensional arrays (arrays of arrays).
+
+Follows Array API semantics as closely as possible.
+
+@docs Array2d
+
+
+@docs initialize, repeat
+
+
+## Transform
+
+@docs map, indexedMap, foldl, foldr, filter, filterMap
+
+
+## Query
+
+@docs get, size, findFirst, findLast, member, any, all, minimum, maximum
+
+
+## Modify
+
+@docs set, update
+
+-}
+
+
+-- INITIALIZE
+
+
+{-| Alias for an array of arrays.
+-}
+type alias Array2d a =
+    Array (Array a)
+
+
+{-| Initialize a 2-dimensional array with the given width and height.
+
+The values are populated by calling your function with the current `x` and `y`
+coordinates for that element:
+
+    initialize 2 3 (\x y -> { x = x, y = y })
+
+results in
+
+    [ [ {x=0, y=0}, {x=1, y=0} ]
+    , [ {x=0, y=1}, {x=1, y=1} ]
+    , [ {x=0, y=2}, {x=1, y=2} ]
+    ]
+-}
+initialize : Int -> Int -> (Int -> Int -> a) -> Array2d a
+initialize width height fn =
+    Array.initialize height 0 <| \y ->
+        Array.initialize width 0 <| \x ->
+            fn x y
+
+
+
+{-| Create a 2-dimensional array with the given width and height,
+filled with the given value:
+
+    repeat 3 2 'a'
+
+results in:
+
+    [ [ 'a', 'a', 'a' ]
+    , [ 'a', 'a', 'a' ] 
+    ]
+
+-}
+repeat : Int -> Int -> a -> Array2d a
+repeat width height value =
+    initialize width height (\_ _ -> value)
+
+
+-- TRANSFORM
+
+
+{-| Apply a function on every element in a 2-dimensional array.
+
+    map negate
+        [ [ 1, 2, 3 ]
+        , [ 4, 5, 6 ]
+        , [ 7, 8, 9 ]
+        ]
+
+results in:
+
+        [ [ -1, -2, -3 ]
+        , [ -4, -5, -6 ]
+        , [ -7, -8, -9 ]
+        ]
+
+-}
+map : (a -> b) -> Array2d a -> Array2d b
+map fn array2d =
+    Array.map (\row -> Array.map fn row) array2d
+
+
+{-| Same as `map` but the function also receives the x and y coordinates.
+
+    indexedMap (\x y val -> { x = x, y = y, val = val + 1 })
+        [ [ 1, 2 ]
+        , [ 3, 4 ]
+        ]
+
+results in:
+
+        [ [ { x = 0, y = 0, val = 2 }, { x = 1, y = 0, val = 3 } ]
+        , [ { x = 0, y = 1, val = 4 }, { x = 1, y = 1, val = 5 } ]
+        ]
+
+-}
+indexedMap : (Int -> Int -> a -> b) -> Array2d a -> Array2d b
+indexedMap fn array2d =
+    Array.indexedMap
+        ( \y row ->
+            Array.indexedMap (\x val -> fn x y val) row
+        )
+        array2d
+
+
+
+{-| Reduce the array starting from the left of each row, top down.
+
+    foldl (+) 0
+        [ [ 1, 2, 3 ]
+        , [ 4, 5, 6 ]
+        ]
+
+is like saying:
+
+    0
+        |> (+) 1
+        |> (+) 2
+        |> (+) 3
+        |> (+) 4
+        |> (+) 5
+        |> (+) 6
+
+resulting in:
+
+    21
+
+-}
+foldl : (a -> b -> b) -> b -> Array2d a -> b
+foldl fn state array2d =
+    array2d
+        |> Array.flatten
+        |> Array.foldl fn state
+
+
+
+{-| Reduce the array starting from the right of each row, bottom up.
+The same as foldl, but the order is reversed.
+
+    foldr (-) 0
+        [ [ 1, 2 ]
+        , [ 3, 4 ]
+        ]
+
+is like saying:
+
+    0
+        |> (-) 4  -- 4 - 0 = 4
+        |> (-) 3  -- 3 - 4 = -1
+        |> (-) 2  -- 2 - -1 = 3
+        |> (-) 1  -- 1 - 3 = -2
+
+resulting in:
+
+    -2
+
+-}
+foldr : (a -> b -> b) -> b -> Array2d a -> b
+foldr fn state array2d =
+    array2d
+        |> Array.flatten
+        |> Array.foldr fn state
+
+
+{-| Keep values that pass the test.
+Empty rows will be left in place.
+
+    filter (\n -> n < 5) 
+        [ [ 1, 2, 3 ] 
+        , [ 4, 5, 6 ]
+        , [ 7, 8, 9 ]
+        ]
+
+results in:
+
+    [ [ 1, 2, 3 ]
+    , [ 4 ]
+    , []
+    ]
+
+-}
+filter : (a -> Bool) -> Array2d a -> Array2d a
+filter fn array2d =
+    Array.map (Array.filter fn) array2d
+
+
+{-| Filter out unwanted results of a map operation.
+Empty rows will be left in place
+
+    filterMap String.toInt
+        [ [ "3", "not a number", "-5" ]
+        , [ "also not a number " ]
+        ]
+
+results in:
+
+    [ [ 3, -5 ]
+    , []
+    ]
+
+-}
+filterMap : (a -> Maybe b) -> Array2d a -> Array2d b
+filterMap fn array2d =
+    Array.map (Array.filterMap fn) array2d
+
+
+
+{-| Retrieve the element where the first argument is the row
+and the second argument is the column.
+Returns Nothing if either index is out of bounds.
+
+    get 0 1 [ [ 1, 2 ], [ 3, 4 ] ] == Just 2
+    get 1 0 [ [ 1, 2 ], [ 3, 4 ] ] == Just 3
+    get 1 3 [ [ 1, 2 ], [ 3, 4 ] ] == Nothing
+    get 3 1 [ [ 1, 2 ], [ 3, 4 ] ] == Nothing
+
+-}
+get : Int -> Int -> Array2d a -> Maybe a
+get row col array2d =
+    array2d
+        |> Array.get row
+        |> Maybe.withDefault []
+        |> Array.get col
+
+
+
+{-| Return the total size of the array of arrays.
+
+This is determined by adding the lengths of all the rows.
+
+    size [ [ 1, 2 ], [ 3, 4 ] ] == 4
+
+-}
+size : Array2d a -> Int
+size array2d =
+    array2d
+        |> Array.map Array.length
+        |> Array.foldr (+) 0
+
+
+
+{-| Find the first value that passes the test.
+
+    findFirst (\n -> n > 0) [ [ -1, 0 ], [ 1, 2 ] ] == Just 1
+
+-}
+findFirst : (a -> Bool) -> Array2d a -> Maybe a
+findFirst fn array2d =
+    array2d
+        |> Array.flatten
+        |> Array.findFirst fn
+
+
+{-| Find the last value that passes the test.
+
+    findLast (\n -> n > 0) [ [ -1, 0 ], [ 1, 2 ] ] == Just 2
+
+-}
+findLast : (a -> Bool) -> Array2d a -> Maybe a
+findLast fn array2d =
+    array2d
+        |> Array.flatten
+        |> Array.findLast fn
+
+
+{-| Figure out whether an 2-dimensional array contains a value.
+
+    member 9 [ [ 1, 2 ], [ 3, 4 ] ] == False
+    member 4 [ [ 1, 2 ], [ 3, 4 ] ] == True
+
+-}
+member : a -> Array2d a -> Bool
+member value array2d =
+    array2d
+        |> Array.flatten
+        |> Array.member value
+      
+
+{-| Determine if any elements pass the test.
+
+    any isEven [ [ 1, 2 ], [ 3, 4 ] ] == True
+    any isEven [ [ 1, 3 ], [ 3, 5 ] ] == False
+    any isEven [[]] == False
+    any isEven [] == False
+
+-}
+any : (a -> Bool) -> Array2d a -> Bool
+any fn array2d =
+    array2d
+        |> Array.flatten
+        |> Array.any fn
+
+
+{-| Determine if all elements pass the test.
+
+    any isEven [ [ 1, 2 ], [ 3, 4 ] ] == False
+    any isEven [ [ 2, 4 ], [ 6, 8 ] ] == True
+    any isEven [[]] == True
+    any isEven [] == True
+
+-}
+all : (a -> Bool) -> Array2d a -> Bool
+all fn array2d =
+    array2d
+        |> Array.flatten
+        |> Array.all fn
+
+
+{-| Find the minimum element in a non-empty 2-dimensional array.
+
+    minimum [[ 3, 2 ], [ 1 ]] == Just 1
+    minimum [[]] == Nothing
+    minimum [] == Nothing
+
+-}
+minimum : Array2d comparable -> Maybe comparable
+minimum array2d =
+    array2d
+        |> Array.flatten
+        |> Array.minimum
+
+
+{-| Find the maximum element in a non-empty 2-dimensional array.
+
+    minimum [[ 3, 2 ], [ 1 ]] == Just 3
+    minimum [[]] == Nothing
+    minimum [] == Nothing
+
+-}
+maximum : Array2d comparable -> Maybe comparable
+maximum array2d =
+    array2d
+        |> Array.flatten
+        |> Array.maximum
+
+
+-- MODIFY
+
+
+{-| Replaces the element at the given row and column,
+or return the 2-dimensional array unmodified if the row or column is out of bounds.
+    
+    set 0 1 9
+        [ [ 0, 0, 0 ]
+        , [ 0, 0, 0 ]
+        ]
+
+results in
+    
+    [ [ 0, 9, 0 ]
+    , [ 0, 0, 0 ]
+    ]
+
+and
+
+    set 1, 2, 0 [[1]] == [[1]]
+
+-}
+set : Int -> Int -> a -> Array2d a -> Array2d a
+set row col value array2d =
+    array2d
+        |> Array.set row
+            ( array2d
+                |> Array.get row
+                |> Maybe.withDefault []
+                |> Array.set col value
+            )
+
+
+{-| Update a value at the given row and column using a function.
+If the row or column is out of bounds, nothing happens.
+
+    update 0 1 (\n -> n + 1) [[1, 2], [3, 4]] == [[1, 3], [3]]
+    update 0 9 (\n -> n + 1) [[1, 2], [3, 4]] == [[1, 2], [3]]
+
+-}
+update : Int -> Int -> (a -> a) -> Array2d a -> Array2d a
+update row col fn array2d =
+    array2d
+        |> Array.set row
+            ( array2d
+                |> Array.get row
+                |> Maybe.withDefault []
+                |> Array.update col fn
+            )
