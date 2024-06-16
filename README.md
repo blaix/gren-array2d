@@ -7,11 +7,10 @@ Useful in game dev and other architectures where you are often working with a 2-
 ```elm
 myGrid =
     [ [ Grass, Grass, Grass ]
-    , [ Grass, Grass, Water ]
+    , [ Water, Grass, Grass ]
     ]
 
--- Functions that take coordinates follow "row, column" semantics:
-Array2d.get 1 2 == Water
+Array2d.get { x = 0, y = 1 } myGrid == Water
 ```
 
 [Package docs](https://packages.gren-lang.org/package/blaix/gren-array2d/latest/overview)

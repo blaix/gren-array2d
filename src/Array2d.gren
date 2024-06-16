@@ -70,7 +70,9 @@ type alias Array2d a =
 The values are populated by calling your function with the current `x` and `y`
 coordinates for that element:
 
-    initialize 2 3 (\x y -> { x = x, y = y })
+    initialize 
+        { width = 2, height = 3 }
+        (\x y -> { x = x, y = y })
 
 results in
 
@@ -79,8 +81,8 @@ results in
     , [ {x=0, y=2}, {x=1, y=2} ]
     ]
 -}
-initialize : Int -> Int -> (Int -> Int -> a) -> Array2d a
-initialize width height fn =
+initialize : { width : Int, height : Int } -> (Int -> Int -> a) -> Array2d a
+initialize { width, height } fn =
     Array.initialize height 0 <| \y ->
         Array.initialize width 0 <| \x ->
             fn x y
@@ -90,7 +92,7 @@ initialize width height fn =
 {-| Create a 2-dimensional array with the given width and height,
 filled with the given value:
 
-    repeat 3 2 'a'
+    repeat { width = 3, height = 2 } 'a'
 
 results in:
 
@@ -99,9 +101,11 @@ results in:
     ]
 
 -}
-repeat : Int -> Int -> a -> Array2d a
-repeat width height value =
-    initialize width height (\_ _ -> value)
+repeat : { width : Int, height : Int } -> a -> Array2d a
+repeat { width, height } value =
+    initialize 
+        { width = width, height = height }
+        (\_ _ -> value)
 
 
 -- TRANSFORM
@@ -130,7 +134,7 @@ map fn array2d =
 
 {-| Same as `map` but the function also receives the x and y coordinates.
 
-    indexedMap (\x y val -> { x = x, y = y, val = val + 1 })
+    indexedMap (\{ x, y } val -> { x = x, y = y, val = val + 1 })
         [ [ 1, 2 ]
         , [ 3, 4 ]
         ]
@@ -142,11 +146,11 @@ results in:
         ]
 
 -}
-indexedMap : (Int -> Int -> a -> b) -> Array2d a -> Array2d b
+indexedMap : ({ x : Int, y : Int } -> a -> b) -> Array2d a -> Array2d b
 indexedMap fn array2d =
     Array.indexedMap
         ( \y row ->
-            Array.indexedMap (\x val -> fn x y val) row
+            Array.indexedMap (\x val -> fn { x = x, y = y } val) row
         )
         array2d
 
@@ -253,22 +257,19 @@ filterMap fn array2d =
 
 
 
-{-| Retrieve the element where the first argument is the row
-and the second argument is the column.
-Returns Nothing if either index is out of bounds.
+{-| Retrieve the element at the given x y coordinate.
+Returns Nothing if either coordinate is out of bounds.
 
-    get 0 1 [ [ 1, 2 ], [ 3, 4 ] ] == Just 2
-    get 1 0 [ [ 1, 2 ], [ 3, 4 ] ] == Just 3
-    get 1 3 [ [ 1, 2 ], [ 3, 4 ] ] == Nothing
-    get 3 1 [ [ 1, 2 ], [ 3, 4 ] ] == Nothing
+    get {x = 0, y = 1} [[1, 2], [3, 4]] == Just 3
+    get {x = 2, y = 1} [[1, 2], [3, 4]] == Nothing
 
 -}
-get : Int -> Int -> Array2d a -> Maybe a
-get row col array2d =
+get : { x : Int, y : Int } -> Array2d a -> Maybe a
+get { x, y } array2d =
     array2d
-        |> Array.get row
+        |> Array.get y
         |> Maybe.withDefault []
-        |> Array.get col
+        |> Array.get x
 
 
 
@@ -385,10 +386,10 @@ maximum array2d =
 -- MODIFY
 
 
-{-| Replaces the element at the given row and column,
-or return the 2-dimensional array unmodified if the row or column is out of bounds.
+{-| Returns the 2-d array with a value replaced at the given coordinate,
+or unmodified if either coordinate is out of bounds.
     
-    set 0 1 9
+    set { x = 1, y = 0 } 9
         [ [ 0, 0, 0 ]
         , [ 0, 0, 0 ]
         ]
@@ -401,33 +402,33 @@ results in
 
 and
 
-    set 1, 2, 0 [[1]] == [[1]]
+    set { x = 2, y = 1 } 0 [[1]] == [[1]]
 
 -}
-set : Int -> Int -> a -> Array2d a -> Array2d a
-set row col value array2d =
+set : { x : Int, y : Int } -> a -> Array2d a -> Array2d a
+set { x, y } value array2d =
     array2d
-        |> Array.set row
+        |> Array.set y
             ( array2d
-                |> Array.get row
+                |> Array.get y
                 |> Maybe.withDefault []
-                |> Array.set col value
+                |> Array.set x value
             )
 
 
-{-| Update a value at the given row and column using a function.
-If the row or column is out of bounds, nothing happens.
+{-| Update a value at the given coordinates using a function.
+If the x or y position is out of bounds, nothing happens.
 
-    update 0 1 (\n -> n + 1) [[1, 2], [3, 4]] == [[1, 3], [3]]
-    update 0 9 (\n -> n + 1) [[1, 2], [3, 4]] == [[1, 2], [3]]
+    update { x = 1, y = 0 } (\n -> n + 1) [[1, 2], [3, 4]] == [[1, 3], [3, 4]]
+    update { x = 1, y = 9 } (\n -> n + 1) [[1, 2], [3, 4]] == [[1, 2], [3, 4]]
 
 -}
-update : Int -> Int -> (a -> a) -> Array2d a -> Array2d a
-update row col fn array2d =
+update : { x : Int, y : Int } -> (a -> a) -> Array2d a -> Array2d a
+update { x, y } fn array2d =
     array2d
-        |> Array.set row
+        |> Array.set y
             ( array2d
-                |> Array.get row
+                |> Array.get y
                 |> Maybe.withDefault []
-                |> Array.update col fn
+                |> Array.update x fn
             )

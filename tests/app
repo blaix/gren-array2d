@@ -3073,8 +3073,10 @@ var $gren_lang$test$Test$fuzz3 = F4(function(fuzzA, fuzzB, fuzzC, desc) {
 					return A3(f, triple.first, triple.second, triple.third);
 				}), A2($gren_lang$test$Test$fuzz, fuzzer, desc));
 	});
-var $blaix$gren_array2d$Array2d$get = F3(function(row, col, array2d) {
-		return A2($gren_lang$core$Array$get, col, A2($gren_lang$core$Maybe$withDefault, [  ], A2($gren_lang$core$Array$get, row, array2d)));
+var $blaix$gren_array2d$Array2d$get = F2(function(_v0, array2d) {
+		var x = _v0.x;
+		var y = _v0.y;
+		return A2($gren_lang$core$Array$get, x, A2($gren_lang$core$Maybe$withDefault, [  ], A2($gren_lang$core$Array$get, y, array2d)));
 	});
 var $gren_lang$test$Queue$queue = F2(function(fl, rl) {
 		if (fl.length === 0) {
@@ -3367,20 +3369,22 @@ var $gren_lang$test$Fuzz$intRange = F2(function(lo, hi) {
 			}
 		}
 	});
-var $blaix$gren_array2d$Array2d$set = F4(function(row, col, value, array2d) {
-		return A3($gren_lang$core$Array$set, row, A3($gren_lang$core$Array$set, col, value, A2($gren_lang$core$Maybe$withDefault, [  ], A2($gren_lang$core$Array$get, row, array2d))), array2d);
+var $blaix$gren_array2d$Array2d$set = F3(function(_v0, value, array2d) {
+		var x = _v0.x;
+		var y = _v0.y;
+		return A3($gren_lang$core$Array$set, y, A3($gren_lang$core$Array$set, x, value, A2($gren_lang$core$Maybe$withDefault, [  ], A2($gren_lang$core$Array$get, y, array2d))), array2d);
 	});
 var $author$project$Main$fuzzGetSet = function () {
+	var yRange = A2($gren_lang$test$Fuzz$intRange, 0, 2);
+	var xRange = A2($gren_lang$test$Fuzz$intRange, 0, 3);
 	var val = $gren_lang$test$Fuzz$int;
-	var row = A2($gren_lang$test$Fuzz$intRange, 0, 2);
-	var col = A2($gren_lang$test$Fuzz$intRange, 0, 3);
 	var array2d = [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ] ];
-	return A2($gren_lang$test$Test$describe, 'fuzz test get and set', [ A5($gren_lang$test$Test$fuzz3, row, col, val, 'in bounds', F3(function(r, c, v) {
-					return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Just(v), A3($blaix$gren_array2d$Array2d$get, r, c, A4($blaix$gren_array2d$Array2d$set, r, c, v, array2d)));
-				})), A4($gren_lang$test$Test$fuzz2, col, val, 'row out of bounds', F2(function(c, v) {
-					return A2($gren_lang$test$Expect$equal, array2d, A4($blaix$gren_array2d$Array2d$set, 3, c, v, array2d));
-				})), A4($gren_lang$test$Test$fuzz2, row, val, 'col out of bounds', F2(function(r, v) {
-					return A2($gren_lang$test$Expect$equal, array2d, A4($blaix$gren_array2d$Array2d$set, r, 4, v, array2d));
+	return A2($gren_lang$test$Test$describe, 'fuzz test get and set', [ A5($gren_lang$test$Test$fuzz3, xRange, yRange, val, 'in bounds', F3(function(x, y, v) {
+					return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Just(v), A2($blaix$gren_array2d$Array2d$get, { x: x, y: y }, A3($blaix$gren_array2d$Array2d$set, { x: x, y: y }, v, array2d)));
+				})), A4($gren_lang$test$Test$fuzz2, yRange, val, 'x out of bounds', F2(function(y, v) {
+					return A2($gren_lang$test$Expect$equal, array2d, A3($blaix$gren_array2d$Array2d$set, { x: 4, y: y }, v, array2d));
+				})), A4($gren_lang$test$Test$fuzz2, xRange, val, 'y out of bounds', F2(function(x, v) {
+					return A2($gren_lang$test$Expect$equal, array2d, A3($blaix$gren_array2d$Array2d$set, { x: x, y: 3 }, v, array2d));
 				})) ]);
 }();
 var $gren_lang$node$Internal$Init$Task = function (a) {
@@ -6411,13 +6415,13 @@ var $author$project$Main$testFoldr = A2($gren_lang$test$Test$test, 'foldr', func
 var $author$project$Main$testGet = function () {
 	var array2d = [ [ 1, 4 ], [ 5, 2 ], [ 3, 6 ] ];
 	return A2($gren_lang$test$Test$describe, 'get', [ A2($gren_lang$test$Test$test, 'in bounds', function(_v0) {
-				return A2($gren_lang$test$Expect$equalArrays, [ $gren_lang$core$Maybe$Just(1), $gren_lang$core$Maybe$Just(2), $gren_lang$core$Maybe$Just(3), $gren_lang$core$Maybe$Just(4), $gren_lang$core$Maybe$Just(5), $gren_lang$core$Maybe$Just(6) ], [ A3($blaix$gren_array2d$Array2d$get, 0, 0, array2d), A3($blaix$gren_array2d$Array2d$get, 1, 1, array2d), A3($blaix$gren_array2d$Array2d$get, 2, 0, array2d), A3($blaix$gren_array2d$Array2d$get, 0, 1, array2d), A3($blaix$gren_array2d$Array2d$get, 1, 0, array2d), A3($blaix$gren_array2d$Array2d$get, 2, 1, array2d) ]);
+				return A2($gren_lang$test$Expect$equalArrays, [ $gren_lang$core$Maybe$Just(1), $gren_lang$core$Maybe$Just(2), $gren_lang$core$Maybe$Just(3), $gren_lang$core$Maybe$Just(4), $gren_lang$core$Maybe$Just(5), $gren_lang$core$Maybe$Just(6) ], [ A2($blaix$gren_array2d$Array2d$get, { x: 0, y: 0 }, array2d), A2($blaix$gren_array2d$Array2d$get, { x: 1, y: 1 }, array2d), A2($blaix$gren_array2d$Array2d$get, { x: 0, y: 2 }, array2d), A2($blaix$gren_array2d$Array2d$get, { x: 1, y: 0 }, array2d), A2($blaix$gren_array2d$Array2d$get, { x: 0, y: 1 }, array2d), A2($blaix$gren_array2d$Array2d$get, { x: 1, y: 2 }, array2d) ]);
 			}), A2($gren_lang$test$Test$test, 'out of bounds row', function(_v1) {
-				return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Nothing, A3($blaix$gren_array2d$Array2d$get, 3, 0, array2d));
+				return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Nothing, A2($blaix$gren_array2d$Array2d$get, { x: 0, y: 3 }, array2d));
 			}), A2($gren_lang$test$Test$test, 'out of bounds col', function(_v2) {
-				return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Nothing, A3($blaix$gren_array2d$Array2d$get, 0, 3, array2d));
+				return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Nothing, A2($blaix$gren_array2d$Array2d$get, { x: 3, y: 0 }, array2d));
 			}), A2($gren_lang$test$Test$test, 'out of bounds row and col', function(_v3) {
-				return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Nothing, A3($blaix$gren_array2d$Array2d$get, 3, 3, array2d));
+				return A2($gren_lang$test$Expect$equal, $gren_lang$core$Maybe$Nothing, A2($blaix$gren_array2d$Array2d$get, { x: 3, y: 3 }, array2d));
 			}) ]);
 }();
 var $blaix$gren_array2d$Array2d$indexedMap = F2(function(fn, array2d) {
@@ -6432,7 +6436,9 @@ var $author$project$Main$testIndexedMap = A2($gren_lang$test$Test$test, 'indexed
 						return { val: val + 1, x: x, y: y };
 					}), [ [ 1, 2 ], [ 3, 4 ] ]));
 	});
-var $blaix$gren_array2d$Array2d$initialize = F3(function(width, height, fn) {
+var $blaix$gren_array2d$Array2d$initialize = F2(function(_v0, fn) {
+		var width = _v0.width;
+		var height = _v0.height;
 		return A3($gren_lang$core$Array$initialize, height, 0, function(y) {
 				return A3($gren_lang$core$Array$initialize, width, 0, function(x) {
 						return A2(fn, x, y);
@@ -6440,7 +6446,7 @@ var $blaix$gren_array2d$Array2d$initialize = F3(function(width, height, fn) {
 			});
 	});
 var $author$project$Main$testInitialize = A2($gren_lang$test$Test$test, 'initialize', function(_v0) {
-		return A2($gren_lang$test$Expect$equal, [ [ { x: 0, y: 0 }, { x: 1, y: 0 } ], [ { x: 0, y: 1 }, { x: 1, y: 1 } ], [ { x: 0, y: 2 }, { x: 1, y: 2 } ] ], A3($blaix$gren_array2d$Array2d$initialize, 2, 3, F2(function(x, y) {
+		return A2($gren_lang$test$Expect$equal, [ [ { x: 0, y: 0 }, { x: 1, y: 0 } ], [ { x: 0, y: 1 }, { x: 1, y: 1 } ], [ { x: 0, y: 2 }, { x: 1, y: 2 } ] ], A2($blaix$gren_array2d$Array2d$initialize, { height: 3, width: 2 }, F2(function(x, y) {
 						return { x: x, y: y };
 					})));
 	});
@@ -6484,18 +6490,20 @@ var $blaix$gren_array2d$Array2d$minimum = function(array2d) {
 var $author$project$Main$testMinimum = A2($gren_lang$test$Test$test, 'minimum', function(_v0) {
 		return A2($gren_lang$test$Expect$equalArrays, [ $gren_lang$core$Maybe$Just(1), $gren_lang$core$Maybe$Just(2), $gren_lang$core$Maybe$Nothing, $gren_lang$core$Maybe$Nothing ], [ $blaix$gren_array2d$Array2d$minimum([ [ 3, 2 ], [ 1 ] ]), $blaix$gren_array2d$Array2d$minimum([ [ 3, 2 ], [ 4 ] ]), $blaix$gren_array2d$Array2d$minimum([ [  ] ]), $blaix$gren_array2d$Array2d$minimum([  ]) ]);
 	});
-var $blaix$gren_array2d$Array2d$repeat = F3(function(width, height, value) {
-		return A3($blaix$gren_array2d$Array2d$initialize, width, height, F2(function(_v0, _v1) {
+var $blaix$gren_array2d$Array2d$repeat = F2(function(_v0, value) {
+		var width = _v0.width;
+		var height = _v0.height;
+		return A2($blaix$gren_array2d$Array2d$initialize, { height: height, width: width }, F2(function(_v1, _v2) {
 					return value;
 				}));
 	});
 var $author$project$Main$testRepeat = A2($gren_lang$test$Test$test, 'repeat', function(_v0) {
-		return A2($gren_lang$test$Expect$equal, [ [ _Utils_chr('a'), _Utils_chr('a'), _Utils_chr('a') ], [ _Utils_chr('a'), _Utils_chr('a'), _Utils_chr('a') ] ], A3($blaix$gren_array2d$Array2d$repeat, 3, 2, _Utils_chr('a')));
+		return A2($gren_lang$test$Expect$equal, [ [ _Utils_chr('a'), _Utils_chr('a'), _Utils_chr('a') ], [ _Utils_chr('a'), _Utils_chr('a'), _Utils_chr('a') ] ], A2($blaix$gren_array2d$Array2d$repeat, { height: 2, width: 3 }, _Utils_chr('a')));
 	});
 var $author$project$Main$testSet = function () {
 	var array2d = [ [ 0, 0 ], [ 0, 0 ] ];
 	return A2($gren_lang$test$Test$test, 'set', function(_v0) {
-			return A2($gren_lang$test$Expect$equalArrays, [ [ 1, 2 ], [ 3, 4 ] ], A4($blaix$gren_array2d$Array2d$set, 2, 2, 7, A4($blaix$gren_array2d$Array2d$set, 2, 1, 6, A4($blaix$gren_array2d$Array2d$set, 1, 2, 5, A4($blaix$gren_array2d$Array2d$set, 1, 1, 4, A4($blaix$gren_array2d$Array2d$set, 1, 0, 3, A4($blaix$gren_array2d$Array2d$set, 0, 1, 2, A4($blaix$gren_array2d$Array2d$set, 0, 0, 1, array2d))))))));
+			return A2($gren_lang$test$Expect$equalArrays, [ [ 1, 2 ], [ 3, 4 ] ], A3($blaix$gren_array2d$Array2d$set, { x: 2, y: 2 }, 7, A3($blaix$gren_array2d$Array2d$set, { x: 1, y: 2 }, 6, A3($blaix$gren_array2d$Array2d$set, { x: 2, y: 1 }, 5, A3($blaix$gren_array2d$Array2d$set, { x: 1, y: 1 }, 4, A3($blaix$gren_array2d$Array2d$set, { x: 0, y: 1 }, 3, A3($blaix$gren_array2d$Array2d$set, { x: 1, y: 0 }, 2, A3($blaix$gren_array2d$Array2d$set, { x: 0, y: 0 }, 1, array2d))))))));
 		});
 }();
 var $blaix$gren_array2d$Array2d$size = function(array2d) {
@@ -6513,14 +6521,16 @@ var $gren_lang$core$Array$update = F3(function(idx, fn, array) {
 			return A3($gren_lang$core$Array$set, idx, fn(val), array);
 		}
 	});
-var $blaix$gren_array2d$Array2d$update = F4(function(row, col, fn, array2d) {
-		return A3($gren_lang$core$Array$set, row, A3($gren_lang$core$Array$update, col, fn, A2($gren_lang$core$Maybe$withDefault, [  ], A2($gren_lang$core$Array$get, row, array2d))), array2d);
+var $blaix$gren_array2d$Array2d$update = F3(function(_v0, fn, array2d) {
+		var x = _v0.x;
+		var y = _v0.y;
+		return A3($gren_lang$core$Array$set, y, A3($gren_lang$core$Array$update, x, fn, A2($gren_lang$core$Maybe$withDefault, [  ], A2($gren_lang$core$Array$get, y, array2d))), array2d);
 	});
 var $author$project$Main$testUpdate = function () {
 	var _double = $gren_lang$core$Basics$mul(2);
 	var array2d = [ [ 1, 2 ], [ 3, 4 ] ];
 	return A2($gren_lang$test$Test$test, 'update', function(_v0) {
-			return A2($gren_lang$test$Expect$equalArrays, [ [ 2, 4 ], [ 6, 8 ] ], A4($blaix$gren_array2d$Array2d$update, 2, 2, _double, A4($blaix$gren_array2d$Array2d$update, 2, 1, _double, A4($blaix$gren_array2d$Array2d$update, 1, 2, _double, A4($blaix$gren_array2d$Array2d$update, 1, 1, _double, A4($blaix$gren_array2d$Array2d$update, 1, 0, _double, A4($blaix$gren_array2d$Array2d$update, 0, 1, _double, A4($blaix$gren_array2d$Array2d$update, 0, 0, _double, array2d))))))));
+			return A2($gren_lang$test$Expect$equalArrays, [ [ 2, 4 ], [ 6, 8 ] ], A3($blaix$gren_array2d$Array2d$update, { x: 2, y: 2 }, _double, A3($blaix$gren_array2d$Array2d$update, { x: 2, y: 1 }, _double, A3($blaix$gren_array2d$Array2d$update, { x: 1, y: 2 }, _double, A3($blaix$gren_array2d$Array2d$update, { x: 1, y: 1 }, _double, A3($blaix$gren_array2d$Array2d$update, { x: 0, y: 1 }, _double, A3($blaix$gren_array2d$Array2d$update, { x: 1, y: 0 }, _double, A3($blaix$gren_array2d$Array2d$update, { x: 0, y: 0 }, _double, array2d))))))));
 		});
 }();
 var $author$project$Main$main = $gren_lang$test_runner_node$Test$Runner$Node$run(A2($gren_lang$test$Test$describe, 'Array2d', [ $author$project$Main$testInitialize, $author$project$Main$testRepeat, $author$project$Main$testMap, $author$project$Main$testIndexedMap, $author$project$Main$testFoldl, $author$project$Main$testFoldr, $author$project$Main$testFilter, $author$project$Main$testFilterMap, $author$project$Main$testGet, $author$project$Main$testSize, $author$project$Main$testFindFirst, $author$project$Main$testFindLast, $author$project$Main$testMember, $author$project$Main$testAny, $author$project$Main$testAll, $author$project$Main$testMinimum, $author$project$Main$testMaximum, $author$project$Main$testSet, $author$project$Main$testUpdate, $author$project$Main$fuzzGetSet ]));

@@ -50,18 +50,20 @@ main =
 testInitialize : Test
 testInitialize =
     test "initialize" <| \_ ->
-        Array2d.initialize 2 3 (\x y -> { x = x, y = y })
-            |> Expect.equal
-                [ [ {x=0, y=0}, {x=1, y=0} ]
-                , [ {x=0, y=1}, {x=1, y=1} ]
-                , [ {x=0, y=2}, {x=1, y=2} ]
-                ]
+        Array2d.initialize 
+            { width = 2, height = 3 }
+            (\x y -> { x = x, y = y })
+                |> Expect.equal
+                    [ [ {x=0, y=0}, {x=1, y=0} ]
+                    , [ {x=0, y=1}, {x=1, y=1} ]
+                    , [ {x=0, y=2}, {x=1, y=2} ]
+                    ]
 
 
 testRepeat : Test
 testRepeat =
     test "repeat" <| \_ ->
-        Array2d.repeat 3 2 'a'
+        Array2d.repeat { width = 3, height = 2 } 'a'
             |> Expect.equal
                 [ [ 'a', 'a', 'a' ]
                 , [ 'a', 'a', 'a' ] 
@@ -89,7 +91,7 @@ testIndexedMap =
         [ [ 1, 2 ]
         , [ 3, 4 ]
         ]
-            |> Array2d.indexedMap (\x y val -> { x = x, y = y, val = val + 1 })
+            |> Array2d.indexedMap (\{ x, y } val -> { x = x, y = y, val = val + 1 })
             |> Expect.equal
                 [ [ { x = 0, y = 0, val = 2 }, { x = 1, y = 0, val = 3 } ]
                 , [ { x = 0, y = 1, val = 4 }, { x = 1, y = 1, val = 5 } ]
@@ -155,12 +157,12 @@ testGet =
     in
     describe "get"
         [ test "in bounds" <| \_ ->
-            [ Array2d.get 0 0 array2d
-            , Array2d.get 1 1 array2d
-            , Array2d.get 2 0 array2d
-            , Array2d.get 0 1 array2d
-            , Array2d.get 1 0 array2d
-            , Array2d.get 2 1 array2d
+            [ Array2d.get { x = 0, y = 0 } array2d
+            , Array2d.get { x = 1, y = 1 } array2d
+            , Array2d.get { x = 0, y = 2 } array2d
+            , Array2d.get { x = 1, y = 0 } array2d
+            , Array2d.get { x = 0, y = 1 } array2d
+            , Array2d.get { x = 1, y = 2 } array2d
             ]
                 |> Expect.equalArrays
                     [ Just 1
@@ -171,13 +173,13 @@ testGet =
                     , Just 6 
                     ]
         , test "out of bounds row" <| \_ ->
-            Array2d.get 3 0 array2d
+            Array2d.get { x = 0, y = 3 } array2d
                 |> Expect.equal Nothing
         , test "out of bounds col" <| \_ ->
-            Array2d.get 0 3 array2d
+            Array2d.get { x = 3, y = 0 } array2d
                 |> Expect.equal Nothing
         , test "out of bounds row and col" <| \_ ->
-            Array2d.get 3 3 array2d
+            Array2d.get { x = 3, y = 3 } array2d
                 |> Expect.equal Nothing
         ]
 
@@ -350,13 +352,13 @@ testSet =
     in
     test "set" <| \_ ->
         array2d
-            |> Array2d.set 0 0 1
-            |> Array2d.set 0 1 2
-            |> Array2d.set 1 0 3
-            |> Array2d.set 1 1 4
-            |> Array2d.set 1 2 5
-            |> Array2d.set 2 1 6
-            |> Array2d.set 2 2 7
+            |> Array2d.set { x = 0, y = 0 } 1
+            |> Array2d.set { x = 1, y = 0 } 2
+            |> Array2d.set { x = 0, y = 1 } 3
+            |> Array2d.set { x = 1, y = 1 } 4
+            |> Array2d.set { x = 2, y = 1 } 5
+            |> Array2d.set { x = 1, y = 2 } 6
+            |> Array2d.set { x = 2, y = 2 } 7
             |> Expect.equalArrays
                 [ [ 1, 2 ]
                 , [ 3, 4 ]
@@ -376,13 +378,13 @@ testUpdate =
     in
     test "update" <| \_ ->
         array2d
-            |> Array2d.update 0 0 double
-            |> Array2d.update 0 1 double
-            |> Array2d.update 1 0 double
-            |> Array2d.update 1 1 double
-            |> Array2d.update 1 2 double
-            |> Array2d.update 2 1 double
-            |> Array2d.update 2 2 double
+            |> Array2d.update { x = 0, y = 0 } double
+            |> Array2d.update { x = 1, y = 0 } double
+            |> Array2d.update { x = 0, y = 1 } double
+            |> Array2d.update { x = 1, y = 1 } double
+            |> Array2d.update { x = 1, y = 2 } double
+            |> Array2d.update { x = 2, y = 1 } double
+            |> Array2d.update { x = 2, y = 2 } double
             |> Expect.equalArrays
                 [ [ 2, 4 ]
                 , [ 6, 8 ]
@@ -398,29 +400,29 @@ fuzzGetSet =
             , [ 0, 0, 0, 0 ]
             ]
 
-        row =
-            Fuzz.intRange 0 2
-
-        col =
+        xRange =
             Fuzz.intRange 0 3
+        
+        yRange = 
+            Fuzz.intRange 0 2
 
         val =
             Fuzz.int
     in
     describe "fuzz test get and set"
-        [ fuzz3 row col val "in bounds" <| \r c v ->
+        [ fuzz3 xRange yRange val "in bounds" <| \x y v ->
             array2d
-                |> Array2d.set r c v
-                |> Array2d.get r c
+                |> Array2d.set { x = x, y = y } v
+                |> Array2d.get { x = x, y = y }
                 |> Expect.equal (Just v)
 
-        , fuzz2 col val "row out of bounds" <| \c v ->
+        , fuzz2 yRange val "x out of bounds" <| \y v ->
             array2d
-                |> Array2d.set 3 c v
+                |> Array2d.set { x = 4, y = y } v
                 |> Expect.equal array2d
-        , fuzz2 row val "col out of bounds" <| \r v ->
+        , fuzz2 xRange val "y out of bounds" <| \x v ->
             array2d
-                |> Array2d.set r 4 v
+                |> Array2d.set { x = x, y = 3 } v
                 |> Expect.equal array2d
         ]
 
