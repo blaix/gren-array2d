@@ -5,5 +5,8 @@
   },
   "dependencies": {
     "gren-lang": "^0.3.0"
+  },
+  "devDependencies": {
+    "gren-packages": "^3.3.2"
   }
 }
