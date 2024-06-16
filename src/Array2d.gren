@@ -156,7 +156,7 @@ indexedMap fn array2d =
 
 
 
-{-| Reduce the array starting from the left of each row, top down.
+{-| Reduce the arrays starting from the left of each row, top down.
 
     foldl (+) 0
         [ [ 1, 2, 3 ]
@@ -186,7 +186,7 @@ foldl fn state array2d =
 
 
 
-{-| Reduce the array starting from the right of each row, bottom up.
+{-| Reduce the arrays starting from the right of each row, bottom up.
 The same as foldl, but the order is reversed.
 
     foldr (-) 0
@@ -312,7 +312,7 @@ findLast fn array2d =
         |> Array.findLast fn
 
 
-{-| Figure out whether an 2-dimensional array contains a value.
+{-| Figure out whether a 2-dimensional array contains a value.
 
     member 9 [ [ 1, 2 ], [ 3, 4 ] ] == False
     member 4 [ [ 1, 2 ], [ 3, 4 ] ] == True
