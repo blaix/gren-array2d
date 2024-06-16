@@ -67,12 +67,10 @@ type alias Array2d a =
 
 {-| Initialize a 2-dimensional array with the given width and height.
 
-The values are populated by calling your function with the current `x` and `y`
+The values are populated by calling your function with the { x, y }
 coordinates for that element:
 
-    initialize 
-        { width = 2, height = 3 }
-        (\x y -> { x = x, y = y })
+    initialize { width = 2, height = 3 } identity
 
 results in
 
@@ -81,11 +79,11 @@ results in
     , [ {x=0, y=2}, {x=1, y=2} ]
     ]
 -}
-initialize : { width : Int, height : Int } -> (Int -> Int -> a) -> Array2d a
+initialize : { width : Int, height : Int } -> ({ x : Int, y : Int } -> a) -> Array2d a
 initialize { width, height } fn =
     Array.initialize height 0 <| \y ->
         Array.initialize width 0 <| \x ->
-            fn x y
+            fn { x = x, y = y }
 
 
 
@@ -105,7 +103,7 @@ repeat : { width : Int, height : Int } -> a -> Array2d a
 repeat { width, height } value =
     initialize 
         { width = width, height = height }
-        (\_ _ -> value)
+        (\_ -> value)
 
 
 -- TRANSFORM
