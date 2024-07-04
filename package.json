@@ -4,9 +4,9 @@
     "test": "cd tests && gren make src/Main.gren && node app"
   },
   "dependencies": {
-    "gren-lang": "^0.3.0"
+    "gren-lang": "^0.4.4"
   },
   "devDependencies": {
-    "gren-packages": "^3.3.2"
+    "gren-packages": "^4.1.0"
   }
 }
