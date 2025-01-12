@@ -10,8 +10,8 @@ module Array2d exposing
     , indexedMap
     , foldl
     , foldr
-    , filter
-    , filterMap
+    , keepIf
+    , mapAndKeepJust
 
     -- Query
     , get
@@ -41,7 +41,7 @@ Follows Array API semantics as closely as possible.
 
 ## Transform
 
-@docs map, indexedMap, foldl, foldr, filter, filterMap
+@docs map, indexedMap, foldl, foldr, keepIf, mapAndKeepJust
 
 
 ## Query
@@ -215,7 +215,7 @@ foldr fn state array2d =
 {-| Keep values that pass the test.
 Empty rows will be left in place.
 
-    filter (\n -> n < 5) 
+    keepIf (\n -> n < 5) 
         [ [ 1, 2, 3 ] 
         , [ 4, 5, 6 ]
         , [ 7, 8, 9 ]
@@ -229,15 +229,15 @@ results in:
     ]
 
 -}
-filter : (a -> Bool) -> Array2d a -> Array2d a
-filter fn array2d =
-    Array.map (Array.filter fn) array2d
+keepIf : (a -> Bool) -> Array2d a -> Array2d a
+keepIf fn array2d =
+    Array.map (Array.keepIf fn) array2d
 
 
 {-| Filter out unwanted results of a map operation.
 Empty rows will be left in place
 
-    filterMap String.toInt
+    mapAndKeepJust String.toInt
         [ [ "3", "not a number", "-5" ]
         , [ "also not a number " ]
         ]
@@ -249,9 +249,9 @@ results in:
     ]
 
 -}
-filterMap : (a -> Maybe b) -> Array2d a -> Array2d b
-filterMap fn array2d =
-    Array.map (Array.filterMap fn) array2d
+mapAndKeepJust : (a -> Maybe b) -> Array2d a -> Array2d b
+mapAndKeepJust fn array2d =
+    Array.map (Array.mapAndKeepJust fn) array2d
 
 
 
@@ -285,29 +285,52 @@ size array2d =
         |> Array.foldr (+) 0
 
 
-
 {-| Find the first value that passes the test.
 
-    findFirst (\n -> n > 0) [ [ -1, 0 ], [ 1, 2 ] ] == Just 1
+    findFirst (\n -> n > 0)
+        [ [ -1, 0 ]
+        , [ 1, 2 ] 
+        ]
+
+would return:
+
+        Just 
+            { index = { x = 0, y = 1 }
+            , value = 1
+            }
 
 -}
-findFirst : (a -> Bool) -> Array2d a -> Maybe a
+findFirst : (a -> Bool) -> Array2d a -> Maybe { index : { x : Int, y : Int }, value : a }
 findFirst fn array2d =
     array2d
+        |> indexedMap (\coord value -> { index = coord, value = value })
         |> Array.flatten
-        |> Array.findFirst fn
+        |> Array.findFirst (\a -> fn a.value) 
+        |> Maybe.map (\{ value } -> { index = value.index, value = value.value })
 
 
 {-| Find the last value that passes the test.
 
-    findLast (\n -> n > 0) [ [ -1, 0 ], [ 1, 2 ] ] == Just 2
+    findLast (\n -> n > 0) 
+        [ [ -1, 0 ]
+        , [ 1, 2 ] 
+        ]
+
+would return:
+
+    Just
+        { index = { x = 1, y = 1 }
+        , value = 2
+        }
 
 -}
-findLast : (a -> Bool) -> Array2d a -> Maybe a
+findLast : (a -> Bool) -> Array2d a -> Maybe { index : { x : Int, y : Int }, value : a }
 findLast fn array2d =
     array2d
+        |> indexedMap (\coord value -> { index = coord, value = value })
         |> Array.flatten
-        |> Array.findLast fn
+        |> Array.findLast (\a -> fn a.value) 
+        |> Maybe.map (\{ value } -> { index = value.index, value = value.value })
 
 
 {-| Figure out whether a 2-dimensional array contains a value.

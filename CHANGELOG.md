@@ -1,3 +1,10 @@
+# 4.0.0 (2025-01-01)
+
+* Update to gren 0.5
+* `filter` renamed to `keepIf`.
+* `filterMap` renamed to `mapAndKeepJust`.
+* findFirst and findLast return `Maybe { index : { x : Int, y : Int }, value : a }` instead of just the value.
+
 # 3.0.0 (2024-07-04)
 
 * Update to gren 0.4

@@ -23,8 +23,8 @@ main =
             , testIndexedMap
             , testFoldl
             , testFoldr
-            , testFilter
-            , testFilterMap
+            , testKeepIf
+            , testMapAndKeepJust
 
             -- Query
             , testGet
@@ -116,14 +116,14 @@ testFoldr =
             |> Expect.equal -2
 
 
-testFilter : Test
-testFilter =
-    test "filter" <| \_ ->
+testKeepIf : Test
+testKeepIf =
+    test "keepIf" <| \_ ->
         [ [ 1, 2, 3 ] 
         , [ 4, 5, 6 ]
         , [ 7, 8, 9 ]
         ]
-            |> Array2d.filter (\n -> n < 5) 
+            |> Array2d.keepIf (\n -> n < 5) 
             |> Expect.equal
                 [ [ 1, 2, 3 ]
                 , [ 4 ]
@@ -131,13 +131,13 @@ testFilter =
                 ]
 
 
-testFilterMap : Test
-testFilterMap =
-    test "filterMap" <| \_ ->
+testMapAndKeepJust : Test
+testMapAndKeepJust =
+    test "mapAndKeepJust" <| \_ ->
         [ [ "3", "not a number", "-5" ]
         , [ "also not a number " ]
         ]
-            |> Array2d.filterMap String.toInt
+            |> Array2d.mapAndKeepJust String.toInt
             |> Expect.equal
                 [ [ 3, -5 ]
                 , []
@@ -215,10 +215,10 @@ testFindFirst =
         , Array2d.findFirst (\n -> n < 1) array2d
         ]
             |> Expect.equalArrays
-                [ Just 1
-                , Just 2
-                , Just 3
-                , Just 4
+                [ Just { index = { x = 0, y = 0 }, value = 1 }
+                , Just { index = { x = 1, y = 0 }, value = 2 }
+                , Just { index = { x = 0, y = 1 }, value = 3 }
+                , Just { index = { x = 1, y = 1 }, value = 4 }
                 , Nothing
                 , Nothing
                 ]
@@ -241,10 +241,10 @@ testFindLast =
         , Array2d.findLast (\n -> n > 4) array2d
         ]
             |> Expect.equalArrays
-                [ Just 1
-                , Just 2
-                , Just 3
-                , Just 4
+                [ Just { index = { x = 0, y = 0 }, value = 1 }
+                , Just { index = { x = 1, y = 0 }, value = 2 }
+                , Just { index = { x = 0, y = 1 }, value = 3 }
+                , Just { index = { x = 1, y = 1 }, value = 4 }
                 , Nothing
                 , Nothing
                 ]
